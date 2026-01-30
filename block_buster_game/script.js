@@ -16,17 +16,23 @@ function createGrid() {
             const color = COLORS[Math.floor(Math.random() * COLORS.length)];
             rowArray.push(color);
 
-            const block = document.createElement('div');
-            block.classList.add('block', color);
-            block.dataset.row = row;
-            block.dataset.col = col;
-
-            block.addEventListener('click', () => handleBlockClick(row, col));
-
+            const block = createBlockElement(row, col, color);
             gridElement.appendChild(block);
         }
         grid.push(rowArray);
     }
+}
+
+function createBlockElement(row, col, color) {
+    const block = document.createElement('div');
+    block.classList.add('block', color);
+    block.dataset.row = row;
+    block.dataset.col = col;
+    block.dataset.color = color;
+
+    block.addEventListener('click', () => handleBlockClick(row, col));
+
+    return block;
 }
 
 function handleBlockClick(row, col) {
@@ -38,7 +44,7 @@ function handleBlockClick(row, col) {
         removeBlocks(blocksToRemove);
         updateScore(blocksToRemove.length);
         dropBlocks();
-        refillGrid();
+        setTimeout(refillGrid, 200); // Add slight delay for visual effect on drop
     }
 }
 
@@ -72,7 +78,10 @@ function removeBlocks(blocks) {
         const blockElement = document.querySelector(
             `.block[data-row='${row}'][data-col='${col}']`
         );
-        blockElement.remove();
+        blockElement.classList.add('removed'); // Add a class for animation
+        setTimeout(() => {
+            blockElement.remove();
+        }, 200);
     });
 }
 
@@ -96,7 +105,10 @@ function dropBlocks() {
                     `.block[data-row='${row}'][data-col='${col}']`
                 );
                 blockElement.dataset.row = emptyRow;
-                gridElement.appendChild(blockElement);
+                blockElement.style.transform = `translateY(${(emptyRow - row) * 43}px)`; // Add animation for falling
+                setTimeout(() => {
+                    blockElement.style.transform = '';
+                }, 200);
             }
         }
     }
@@ -109,14 +121,13 @@ function refillGrid() {
                 const color = COLORS[Math.floor(Math.random() * COLORS.length)];
                 grid[row][col] = color;
 
-                const block = document.createElement('div');
-                block.classList.add('block', color);
-                block.dataset.row = row;
-                block.dataset.col = col;
-
-                block.addEventListener('click', () => handleBlockClick(row, col));
-
+                const block = createBlockElement(row, col, color);
+                block.style.opacity = 0;
                 gridElement.appendChild(block);
+
+                setTimeout(() => {
+                    block.style.opacity = 1;
+                }, 10);
             }
         }
     }
