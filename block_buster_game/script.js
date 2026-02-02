@@ -2,183 +2,176 @@
 const GRID_SIZE = 10;
 const BLOCK_SIZE = 40;
 const GAP = 3;
-const COLORS = ['red', 'green', 'blue', 'yellow', 'purple'];
+const COLORS = {
+    red: '#e74c3c',
+    green: '#2ecc71',
+    blue: '#3498db',
+    yellow: '#f1c40f',
+    purple: '#9b59b6'
+};
+const COLOR_KEYS = Object.keys(COLORS);
 
-// grid 存放对象: { color: string, el: HTMLElement, row: number, col: number, removed: boolean }
-let grid = []; 
+let grid = [];
 let score = 0;
-let isAnimating = false; // 防止动画过程中重复点击
+let level = 1;
+let targetScore = 500;
+let isAnimating = false;
 
 const gridElement = document.getElementById('grid');
 const scoreElement = document.getElementById('score-value');
-const restartButton = document.getElementById('restart-button');
+const levelElement = document.getElementById('level-value');
+const targetElement = document.getElementById('target-value');
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+
+// --- 粒子系统开始 ---
+let particles = [];
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = Math.random() * 4 + 2;
+        this.speedX = (Math.random() - 0.5) * 8;
+        this.speedY = (Math.random() - 0.5) * 8;
+        this.gravity = 0.2;
+        this.alpha = 1;
+        this.life = 0.95; // 每一帧透明度减少的比例
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.speedY += this.gravity;
+        this.alpha *= this.life;
+    }
+    draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function createExplosion(x, y, color) {
+    for (let i = 0; i < 15; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].alpha < 0.01) particles.splice(i, 1);
+    }
+    requestAnimationFrame(animateParticles);
+}
+// --- 粒子系统结束 ---
+
+function initGame() {
+    canvas.width = 430;
+    canvas.height = 430;
+    animateParticles();
+    createGrid();
+}
 
 function createGrid() {
     gridElement.innerHTML = '';
     grid = [];
-    score = 0;
-    scoreElement.textContent = score;
     isAnimating = false;
-
     for (let col = 0; col < GRID_SIZE; col++) {
         let colArray = [];
         for (let row = 0; row < GRID_SIZE; row++) {
-            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            const color = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
             const block = createBlockElement(row, col, color);
-            
-            // 存入逻辑网格
-            colArray.push({
-                color: color,
-                el: block,
-                row: row,
-                col: col,
-                removed: false
-            });
-            
+            colArray.push({ color, el: block, row, col, removed: false });
             gridElement.appendChild(block);
         }
         grid.push(colArray);
     }
 }
 
-// 计算坐标并设置位置
-function setBlockPosition(element, row, col) {
-    const x = col * (BLOCK_SIZE + GAP);
-    const y = row * (BLOCK_SIZE + GAP);
-    element.style.left = `${x}px`;
-    element.style.top = `${y}px`;
-}
-
 function createBlockElement(row, col, color) {
     const block = document.createElement('div');
     block.classList.add('block', color);
-    
-    // 初始化坐标属性
     block.dataset.row = row;
     block.dataset.col = col;
-
     setBlockPosition(block, row, col);
-    
-    // 修正：点击时不使用闭包里的 row，而是读取当前元素上的 data-row
-    block.addEventListener('click', (e) => {
-        // e.target 可能是内部元素，所以用 block 变量本身最安全
-        const currentRow = parseInt(block.dataset.row); 
-        handleBlockClick(col, currentRow);
+    block.addEventListener('click', () => {
+        if (isAnimating) return;
+        const r = parseInt(block.dataset.row);
+        const c = parseInt(block.dataset.col);
+        handleBlockClick(c, r);
     });
-
     return block;
 }
 
+function setBlockPosition(el, row, col) {
+    el.style.left = `${col * (BLOCK_SIZE + GAP)}px`;
+    el.style.top = `${row * (BLOCK_SIZE + GAP)}px`;
+}
+
 function handleBlockClick(col, row) {
-    if (isAnimating) return; // 动画中禁止点击
-
     const cell = grid[col][row];
-    if (!cell || cell.removed) return;
+    const matches = getConnectedBlocks(col, row, cell.color);
+    if (matches.length > 1) {
+        isAnimating = true;
+        updateScore(matches.length);
+        
+        matches.forEach(c => {
+            c.removed = true;
+            // 获取方块中心位置触发粒子
+            const rect = c.el.getBoundingClientRect();
+            const gridRect = gridElement.getBoundingClientRect();
+            const centerX = rect.left - gridRect.left + BLOCK_SIZE / 2;
+            const centerY = rect.top - gridRect.top + BLOCK_SIZE / 2;
+            createExplosion(centerX, centerY, COLORS[c.color]);
+            
+            c.el.style.transform = 'scale(0)';
+            c.el.style.opacity = '0';
+        });
 
-    const blocksToRemove = getConnectedBlocks(col, row, cell.color);
-
-    if (blocksToRemove.length > 1) {
-        updateScore(blocksToRemove.length);
-        eliminateBlocks(blocksToRemove);
+        setTimeout(() => {
+            matches.forEach(c => c.el.remove());
+            applyGravity();
+            checkLevelUp(); // 每次下落后检查是否过关
+        }, 300);
     }
 }
 
 function getConnectedBlocks(col, row, color, visited = new Set()) {
     const key = `${col},${row}`;
-    if (
-        col < 0 || col >= GRID_SIZE || 
-        row < 0 || row >= GRID_SIZE || 
-        visited.has(key)
-    ) return [];
-
+    if (col < 0 || col >= GRID_SIZE || row < 0 || row >= GRID_SIZE || visited.has(key)) return [];
     const cell = grid[col][row];
     if (!cell || cell.removed || cell.color !== color) return [];
-
     visited.add(key);
-    let matches = [cell];
-
-    matches = matches.concat(getConnectedBlocks(col - 1, row, color, visited));
-    matches = matches.concat(getConnectedBlocks(col + 1, row, color, visited));
-    matches = matches.concat(getConnectedBlocks(col, row - 1, color, visited));
-    matches = matches.concat(getConnectedBlocks(col, row + 1, color, visited));
-
-    return matches;
-}
-
-function eliminateBlocks(blocks) {
-    isAnimating = true;
-
-    // 1. 标记并执行消除动画（淡出）
-    blocks.forEach(cell => {
-        cell.removed = true;
-        cell.el.style.opacity = '0';
-        cell.el.style.transform = 'scale(0.8)';
-    });
-
-    // 等待消除动画完成 (300ms) 后，执行下落
-    setTimeout(() => {
-        // 清除DOM
-        blocks.forEach(cell => {
-            if (cell.el.parentNode) cell.el.remove();
-        });
-        
-        applyGravity();
-    }, 300);
+    return [cell, ...getConnectedBlocks(col-1, row, color, visited), 
+                  ...getConnectedBlocks(col+1, row, color, visited),
+                  ...getConnectedBlocks(col, row-1, color, visited),
+                  ...getConnectedBlocks(col, row+1, color, visited)];
 }
 
 function applyGravity() {
-    // 对每一列进行处理
     for (let col = 0; col < GRID_SIZE; col++) {
-        const colData = grid[col]; 
-        
-        // 1. 收集幸存的方块
-        let survivingBlocks = colData.filter(cell => !cell.removed);
-        
-        // 2. 计算需要补充多少个新方块
-        let missingCount = GRID_SIZE - survivingBlocks.length;
-        
-        // 3. 生成新方块
-        for (let i = 0; i < missingCount; i++) {
-            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-            
-            // 计算起始行号（隐藏在上方）
-            const startRow = -1 - i; 
-            
-            // 修正：使用 createBlockElement 统一创建，确保 dataset 和点击事件被正确绑定
-            const block = createBlockElement(startRow, col, color);
-            
-            gridElement.appendChild(block);
-
-            // 加到幸存列表的最前面
-            survivingBlocks.unshift({
-                color: color,
-                el: block,
-                row: startRow, 
-                col: col,
-                removed: false
-            });
+        let survivors = grid[col].filter(c => !c.removed);
+        let missing = GRID_SIZE - survivors.length;
+        for (let i = 0; i < missing; i++) {
+            const color = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+            const row = -1 - i;
+            const el = createBlockElement(row, col, color);
+            gridElement.appendChild(el);
+            survivors.unshift({ color, el, row, col, removed: false });
         }
-
-        // 4. 更新整个列的数据
-        grid[col] = survivingBlocks; 
-        
-        survivingBlocks.forEach((cell, newRowIndex) => {
-            // 更新内部逻辑数据
-            cell.row = newRowIndex;
-            
-            // 关键修正：必须同步更新 DOM 上的 dataset，否则点击事件会错乱
-            cell.el.dataset.row = newRowIndex;
-
-            // 触发下落动画
-            requestAnimationFrame(() => {
-                setBlockPosition(cell.el, newRowIndex, col);
-            });
+        grid[col] = survivors;
+        survivors.forEach((c, idx) => {
+            c.row = idx;
+            c.el.dataset.row = idx;
+            requestAnimationFrame(() => setBlockPosition(c.el, idx, col));
         });
     }
-
-    setTimeout(() => {
-        isAnimating = false;
-    }, 550);
+    setTimeout(() => isAnimating = false, 500);
 }
 
 function updateScore(count) {
@@ -186,7 +179,27 @@ function updateScore(count) {
     scoreElement.textContent = score;
 }
 
-restartButton.addEventListener('click', createGrid);
+// 关卡检查逻辑
+function checkLevelUp() {
+    if (score >= targetScore) {
+        isAnimating = true; // 暂停点击
+        alert(`恭喜！完成第 ${level} 关！点击确定进入下一关。`);
+        level++;
+        targetScore += 500 + (level * 200); // 每一关目标分更高
+        levelElement.textContent = level;
+        targetElement.textContent = targetScore;
+        createGrid(); // 刷新网格
+    }
+}
 
-// 初始化
-createGrid();
+document.getElementById('restart-button').addEventListener('click', () => {
+    score = 0;
+    level = 1;
+    targetScore = 500;
+    scoreElement.textContent = '0';
+    levelElement.textContent = '1';
+    targetElement.textContent = '500';
+    createGrid();
+});
+
+initGame();

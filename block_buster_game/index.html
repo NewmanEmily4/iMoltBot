@@ -7,10 +7,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-container">
+<div id="game-container">
         <h1>Block Buster Game</h1>
-        <div id="score">Score: <span id="score-value">0</span></div>
-        <div id="grid"></div>
+        <div id="stats-bar">
+            <div id="level-display">Level: <span id="level-value">1</span></div>
+            <div id="score">Score: <span id="score-value">0</span></div>
+            <div id="target">Target: <span id="target-value">500</span></div>
+        </div>
+        <div id="grid-wrapper">
+            <div id="grid"></div>
+            <canvas id="particle-canvas"></canvas>
+        </div>
         <button id="restart-button">Restart Game</button>
     </div>
     <script src="script.js"></script>
