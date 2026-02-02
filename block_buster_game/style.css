@@ -122,3 +122,10 @@ body {
 }
 
 #restart-button:active { transform: scale(0.95); }
+
+/* style.css */
+#mute-button {
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+    transition: transform 0.2s;
+}
+#mute-button:active { transform: scale(0.8); }

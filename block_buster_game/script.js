@@ -24,6 +24,60 @@ const targetElement = document.getElementById('target-value');
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 
+/* script.js */
+
+// ... 原有的常量定义 ...
+const audioFiles = {
+    bgm: new Audio('bgm.mp3'),
+    click: new Audio('click.mp3'),
+    pop: new Audio('pop.mp3'),
+    levelUp: new Audio('level-up.mp3')
+};
+
+// 设置 BGM 循环和音量
+audioFiles.bgm.loop = true;
+audioFiles.bgm.volume = 0.4;
+
+/* script.js */
+let isMuted = false;
+const muteButton = document.getElementById('mute-button');
+
+muteButton.addEventListener('click', () => {
+    isMuted = !isMuted;
+    muteButton.textContent = isMuted ? '🔇' : '🔊';
+    
+    // 遍历所有音效设置静音状态
+    Object.values(audioFiles).forEach(audio => {
+        audio.muted = isMuted;
+    });
+});
+
+
+function handleBlockClick(col, row) {
+    const cell = grid[col][row];
+    const matches = getConnectedBlocks(col, row, cell.color);
+    
+    if (matches.length > 1) {
+        audioFiles.pop.currentTime = 0; // 重置进度，确保连续快速点击时也能发声
+        audioFiles.pop.play();
+        
+        isAnimating = true;
+        // ... 原有的消除逻辑 ...
+    } else {
+        // 如果点击无效（孤立点），可以播一个轻微的点击声
+        audioFiles.click.currentTime = 0;
+        audioFiles.click.play();
+    }
+}
+
+function checkLevelUp() {
+    if (score >= targetScore) {
+        audioFiles.levelUp.play();
+        isAnimating = true;
+        // ... 原有的过关提示逻辑 ...
+    }
+}
+
 // --- 粒子系统 ---
 let particles = [];
 class Particle {
@@ -65,9 +119,15 @@ function animateParticles() {
 
 // --- 核心逻辑 ---
 function initGame() {
-    canvas.width = 430; canvas.height = 430;
+    canvas.width = 430; 
+    canvas.height = 430;
     animateParticles();
     createGrid();
+    
+    // 浏览器通常禁止自动播放，需要在第一次点击时启动 BGM
+    document.addEventListener('mousedown', () => {
+        audioFiles.bgm.play().catch(() => {}); 
+    }, { once: true });
 }
 
 function createGrid() {
