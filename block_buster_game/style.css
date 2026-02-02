@@ -6,43 +6,32 @@ body {
     padding: 0;
 }
 
-#game-container {
-    display: inline-block;
-    margin-top: 50px;
-    padding: 20px;
-    border: 2px solid #333;
-    background-color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-}
-
-#score {
-    margin-bottom: 10px;
-    font-size: 1.5em;
-    font-weight: bold;
-}
-
 #grid {
-    display: grid;
-    grid-template-columns: repeat(10, 40px);
-    gap: 3px;
-    justify-content: center;
+    /* 移除 display: grid */
+    position: relative; /* 作为定位基准 */
+    width: 430px;       /* 10个方块(40px) + 9个间隙(3px) + 左右内边距 */
+    height: 430px;
     margin: 20px auto;
+    background-color: #eee; /*以此区分边界*/
+    border-radius: 5px;
 }
 
 .block {
+    position: absolute; /* 关键：绝对定位 */
     width: 40px;
     height: 40px;
     border-radius: 5px;
-    background-color: #ccc;
+    
+    /* 居中文字 */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2em;
-    font-weight: bold;
+    
+    /* 动画核心：监听 top 和 opacity 的变化，时长 0.5秒 */
+    transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s; 
+    
     cursor: pointer;
-    user-select: none;
-    color: #fff;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2); /* 增加一点立体感 */
 }
 
 .block.red {
