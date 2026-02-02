@@ -24,25 +24,21 @@ const targetElement = document.getElementById('target-value');
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 
-// --- 粒子系统开始 ---
+// --- 粒子系统 ---
 let particles = [];
 class Particle {
     constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
+        this.x = x; this.y = y; this.color = color;
         this.size = Math.random() * 4 + 2;
         this.speedX = (Math.random() - 0.5) * 8;
         this.speedY = (Math.random() - 0.5) * 8;
         this.gravity = 0.2;
         this.alpha = 1;
-        this.life = 0.95; // 每一帧透明度减少的比例
+        this.life = 0.95;
     }
     update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.speedY += this.gravity;
-        this.alpha *= this.life;
+        this.x += this.speedX; this.y += this.speedY;
+        this.speedY += this.gravity; this.alpha *= this.life;
     }
     draw() {
         ctx.globalAlpha = this.alpha;
@@ -54,9 +50,7 @@ class Particle {
 }
 
 function createExplosion(x, y, color) {
-    for (let i = 0; i < 15; i++) {
-        particles.push(new Particle(x, y, color));
-    }
+    for (let i = 0; i < 15; i++) particles.push(new Particle(x, y, color));
 }
 
 function animateParticles() {
@@ -68,11 +62,10 @@ function animateParticles() {
     }
     requestAnimationFrame(animateParticles);
 }
-// --- 粒子系统结束 ---
 
+// --- 核心逻辑 ---
 function initGame() {
-    canvas.width = 430;
-    canvas.height = 430;
+    canvas.width = 430; canvas.height = 430;
     animateParticles();
     createGrid();
 }
@@ -101,9 +94,7 @@ function createBlockElement(row, col, color) {
     setBlockPosition(block, row, col);
     block.addEventListener('click', () => {
         if (isAnimating) return;
-        const r = parseInt(block.dataset.row);
-        const c = parseInt(block.dataset.col);
-        handleBlockClick(c, r);
+        handleBlockClick(parseInt(block.dataset.col), parseInt(block.dataset.row));
     });
     return block;
 }
@@ -116,27 +107,35 @@ function setBlockPosition(el, row, col) {
 function handleBlockClick(col, row) {
     const cell = grid[col][row];
     const matches = getConnectedBlocks(col, row, cell.color);
+    
     if (matches.length > 1) {
         isAnimating = true;
+        const gain = matches.length * matches.length;
         updateScore(matches.length);
         
+        // 如果消除多于 8 个，触发屏幕抖动
+        if (matches.length > 8) shakeGrid();
+
+        let centerX, centerY;
         matches.forEach(c => {
             c.removed = true;
-            // 获取方块中心位置触发粒子
             const rect = c.el.getBoundingClientRect();
             const gridRect = gridElement.getBoundingClientRect();
-            const centerX = rect.left - gridRect.left + BLOCK_SIZE / 2;
-            const centerY = rect.top - gridRect.top + BLOCK_SIZE / 2;
-            createExplosion(centerX, centerY, COLORS[c.color]);
+            centerX = rect.left - gridRect.left + BLOCK_SIZE / 2;
+            centerY = rect.top - gridRect.top + BLOCK_SIZE / 2;
             
+            createExplosion(centerX, centerY, COLORS[c.color]);
             c.el.style.transform = 'scale(0)';
             c.el.style.opacity = '0';
         });
 
+        // 显示浮动分数
+        showFloatingScore(centerX, centerY, gain);
+
         setTimeout(() => {
             matches.forEach(c => c.el.remove());
             applyGravity();
-            checkLevelUp(); // 每次下落后检查是否过关
+            checkLevelUp();
         }, 300);
     }
 }
@@ -179,23 +178,37 @@ function updateScore(count) {
     scoreElement.textContent = score;
 }
 
-// 关卡检查逻辑
 function checkLevelUp() {
     if (score >= targetScore) {
-        isAnimating = true; // 暂停点击
-        alert(`恭喜！完成第 ${level} 关！点击确定进入下一关。`);
-        level++;
-        targetScore += 500 + (level * 200); // 每一关目标分更高
-        levelElement.textContent = level;
-        targetElement.textContent = targetScore;
-        createGrid(); // 刷新网格
+        isAnimating = true;
+        setTimeout(() => {
+            alert(`恭喜！完成第 ${level} 关！`);
+            level++;
+            targetScore += 500 + (level * 200);
+            levelElement.textContent = level;
+            targetElement.textContent = targetScore;
+            createGrid();
+        }, 500);
     }
 }
 
+function showFloatingScore(x, y, amount) {
+    const scorePopup = document.createElement('div');
+    scorePopup.className = 'floating-score';
+    scorePopup.textContent = `+${amount}`;
+    scorePopup.style.left = `${x}px`;
+    scorePopup.style.top = `${y}px`;
+    document.getElementById('grid-wrapper').appendChild(scorePopup);
+    setTimeout(() => scorePopup.remove(), 1000);
+}
+
+function shakeGrid() {
+    gridElement.classList.add('shake');
+    setTimeout(() => gridElement.classList.remove('shake'), 400);
+}
+
 document.getElementById('restart-button').addEventListener('click', () => {
-    score = 0;
-    level = 1;
-    targetScore = 500;
+    score = 0; level = 1; targetScore = 500;
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
     targetElement.textContent = '500';
