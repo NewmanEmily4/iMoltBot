@@ -19,9 +19,14 @@
             <canvas id="particle-canvas"></canvas>
         </div>
         <button id="restart-button">Restart Game</button>
+        <div id="version-display">v2026020412</div>
 </div>
-<div id="stats-bar">
-    <button id="mute-button" style="background:none; border:none; cursor:pointer; font-size:1.5em;">🔊</button>
+<div id="sound-controls">
+    <div class="sound-control-group">
+        <span id="bgm-icon">🎵</span>
+        <input type="range" id="bgm-volume" min="0" max="100" value="40">
+        <span id="sfx-icon">🔊</span>
+        <input type="range" id="sfx-volume" min="0" max="100" value="80">
 </div>
     <script src="script.js"></script>
 </body>
