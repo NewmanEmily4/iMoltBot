@@ -1,0 +1,25 @@
+{
+  "name": "block_buster",
+  "version": "1.0.0",
+  "description": "test",
+  "homepage": "https://github.com/NewmanEmily4/iMoltBot#readme",
+  "bugs": {
+    "url": "https://github.com/NewmanEmily4/iMoltBot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NewmanEmily4/iMoltBot.git"
+  },
+  "license": "ISC",
+  "author": "Walter Xu",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2"
+  }
+}

@@ -1,0 +1,97 @@
+# --- 构建产物 (Built artifacts) ---
+bin/
+gen/
+out/
+build/
+.gradle/
+/local.properties
+/Captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aar
+*.bundle
+
+# --- IDE 配置文件 (IDE Files) ---
+# Android Studio / IntelliJ
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/caches/
+*.iml
+*.ipr
+*.iws
+
+# --- 系统 & 日志 (System & Logs) ---
+.DS_Store
+Thumbs.db
+*.log
+captures/
+
+# --- 键盘 / 缓存 (Device/OS specific) ---
+.navigation/
+assetWizardSettings.xml
+
+# --- 这里的敏感文件需要特别注意 (Sensitive files) ---
+# 如果你直接在项目根目录存放签名文件，请务必排除
+*.jks
+*.keystore
+# 避开包含秘钥的 google-services.json (取决于团队安全策略)
+# google-services.json
+
+# --- 单元测试相关 ---
+.shelf/
+
+# --- Node.js / JavaScript 项目 (Node.js / JavaScript Projects) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# --- 依赖管理 (Dependency Management) ---
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# --- 构建产物 (Built artifacts) ---
+dist/
+lib/
+*.tgz
+*.tar.gz
+
+# --- 环境变量 (Environment Variables) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- 运行时数据 (Runtime data) ---
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# --- 覆盖率目录 (Coverage directory used by tools like istanbul) ---
+coverage/
+*.lcov
+.nyc_output
+
+# --- TypeScript (TypeScript) ---
+*.tsbuildinfo
+
+# --- 配置文件 (Config files that should be personalized) ---
+.vscode/settings.json
+.eslintcache
+
+# --- 缓存目录 (Cache directories) ---
+.cache/
+.parcel-cache/
+
+# --- 临时文件 (Temporary files) -->
+tmp/
+temp/
