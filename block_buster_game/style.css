@@ -143,6 +143,45 @@ body {
 
 #restart-button:active { transform: scale(0.95); }
 
+.button-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.help-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.4em;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(145deg, #667eea15 0%, #764ba215 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+}
+
+.help-btn:active {
+    transform: scale(0.95);
+}
+
 #version-display {
     margin-top: 15px;
     font-size: 0.75em;
@@ -267,5 +306,595 @@ body {
     #restart-button {
         margin-top: 10px;
         padding: 8px 20px;
+    }
+}
+
+/* 新手引导样式 */
+.guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.guide-overlay.hidden {
+    display: none;
+}
+
+.guide-spotlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+
+.guide-content {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 90%;
+    pointer-events: auto;
+    animation: guidePopIn 0.3s ease-out;
+}
+
+@keyframes guidePopIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.guide-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.guide-text {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.guide-hint {
+    font-size: 0.9em;
+    color: #888;
+    animation: guidePulse 1.5s infinite;
+}
+
+@keyframes guidePulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.guide-progress {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.guide-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+}
+
+.guide-dot.active {
+    background: #007bff;
+    transform: scale(1.2);
+}
+
+.guide-highlight {
+    position: relative;
+    z-index: 1001;
+    box-shadow: 0 0 0 4px #007bff, 0 0 30px rgba(0, 123, 255, 0.5) !important;
+    animation: guideHighlight 1s infinite;
+}
+
+@keyframes guideHighlight {
+    0%, 100% {
+        box-shadow: 0 0 0 4px #007bff, 0 0 30px rgba(0, 123, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 6px #007bff, 0 0 50px rgba(0, 123, 255, 0.8);
+    }
+}
+
+.guide-pulse {
+    animation: guidePulseRing 1s infinite;
+}
+
+@keyframes guidePulseRing {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .guide-content {
+        padding: 15px 20px;
+        bottom: 5%;
+    }
+    
+    .guide-title {
+        font-size: 1.1em;
+    }
+    
+    .guide-text {
+        font-size: 0.9em;
+    }
+}
+
+/* 新手引导样式 - 升级版 */
+.guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.guide-overlay.hidden {
+    display: none;
+}
+
+.guide-spotlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    pointer-events: none;
+    animation: spotlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes spotlightPulse {
+    0%, 100% { background: rgba(0, 0, 0, 0.75); }
+    50% { background: rgba(0, 0, 0, 0.65); }
+}
+
+.guide-content {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+    color: #333;
+    padding: 30px 35px;
+    border-radius: 24px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    text-align: center;
+    max-width: 85%;
+    width: 320px;
+    pointer-events: auto;
+    animation: guidePopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes guidePopIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.8) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) scale(1) translateY(0);
+    }
+}
+
+.guide-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    animation: guideBounce 1s ease-in-out infinite;
+}
+
+@keyframes guideBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.guide-title {
+    font-size: 1.4em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.guide-text {
+    font-size: 1.05em;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+.guide-decorative-line {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    margin: 0 auto 18px;
+    animation: lineExpand 0.5s ease-out;
+}
+
+@keyframes lineExpand {
+    from { width: 0; opacity: 0; }
+    to { width: 60px; opacity: 1; }
+}
+
+.guide-hint {
+    font-size: 0.95em;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 30px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    animation: hintGlow 2s ease-in-out infinite;
+}
+
+@keyframes hintGlow {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    50% { 
+        box-shadow: 0 0 20px 5px rgba(102, 126, 234, 0.3);
+    }
+}
+
+.guide-hint:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.guide-progress {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.guide-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.guide-dot.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.6);
+}
+
+.guide-highlight {
+    position: relative;
+    z-index: 1001;
+    box-shadow: 
+        0 0 0 4px #667eea, 
+        0 0 0 8px rgba(102, 126, 234, 0.3),
+        0 0 40px rgba(102, 126, 234, 0.4) !important;
+    animation: guideHighlight 1s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+@keyframes guideHighlight {
+    0%, 100% {
+        box-shadow: 
+            0 0 0 4px #667eea, 
+            0 0 0 8px rgba(102, 126, 234, 0.3),
+            0 0 40px rgba(102, 126, 234, 0.4);
+    }
+    50% {
+        box-shadow: 
+            0 0 0 6px #667eea, 
+            0 0 0 12px rgba(102, 126, 234, 0.2),
+            0 0 60px rgba(102, 126, 234, 0.3);
+    }
+}
+
+@media (max-width: 480px) {
+    .guide-content {
+        padding: 25px 28px;
+        bottom: 5%;
+        width: 80%;
+    }
+    
+    .guide-icon {
+        font-size: 2.5em;
+    }
+    
+    .guide-title {
+        font-size: 1.25em;
+    }
+    
+    .guide-text {
+        font-size: 0.95em;
+    }
+}
+
+/* 关卡完成弹窗 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    animation: backdropFadeIn 0.3s ease-out;
+}
+
+@keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    position: relative;
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    padding: 40px 35px;
+    border-radius: 28px;
+    text-align: center;
+    max-width: 85%;
+    width: 320px;
+    box-shadow: 
+        0 25px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: modalPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(102, 126, 234, 0.1), transparent 30%);
+    animation: modalRotate 8s linear infinite;
+}
+
+@keyframes modalRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes modalPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.7) translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-icon {
+    font-size: 4em;
+    margin-bottom: 10px;
+    animation: modalBounce 1s ease-in-out infinite;
+}
+
+@keyframes modalBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.1); }
+}
+
+.modal-star {
+    position: absolute;
+    font-size: 2em;
+    opacity: 0;
+    animation: starAppear 0.5s ease-out forwards;
+}
+
+.stars-left {
+    top: 20px;
+    left: 20px;
+    animation-delay: 0.2s;
+}
+
+.stars-center {
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 0.4s;
+}
+
+.stars-right {
+    top: 20px;
+    right: 20px;
+    animation-delay: 0.6s;
+}
+
+@keyframes starAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+    }
+    50% {
+        transform: scale(1.3) rotate(10deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.modal-title {
+    font-size: 2em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 50%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.modal-subtitle {
+    font-size: 1.1em;
+    color: #8892b0;
+    margin-bottom: 25px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-stat {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px 25px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+    display: block;
+    font-size: 2em;
+    font-weight: 800;
+    color: #667eea;
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+.stat-label {
+    font-size: 0.85em;
+    color: #8892b0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 16px 50px;
+    font-size: 1.1em;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 
+        0 10px 30px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 15px 40px rgba(102, 126, 234, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.modal-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 30px 25px;
+        width: 88%;
+    }
+    
+    .modal-icon {
+        font-size: 3em;
+    }
+    
+    .modal-title {
+        font-size: 1.6em;
+    }
+    
+    .modal-star {
+        font-size: 1.5em;
+    }
+    
+    .modal-btn {
+        padding: 14px 40px;
+        font-size: 1em;
+    }
+}
+    
+    .guide-title {
+        font-size: 1.1em;
+    }
+    
+    .guide-text {
+        font-size: 0.9em;
     }
 }

@@ -7,6 +7,41 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="guide-overlay" class="guide-overlay hidden">
+    <div class="guide-spotlight" id="guide-spotlight"></div>
+    <div class="guide-content" id="guide-content">
+        <div class="guide-icon" id="guide-icon">🎮</div>
+        <div class="guide-title" id="guide-title">欢迎来到 Block Buster!</div>
+        <div class="guide-text" id="guide-text">点击任意2个或更多相连的同色方块即可消除！</div>
+        <div class="guide-decorative-line"></div>
+        <div class="guide-hint" id="guide-hint">点击任意位置继续</div>
+        <div class="guide-progress">
+            <span class="guide-dot active"></span>
+            <span class="guide-dot"></span>
+            <span class="guide-dot"></span>
+        </div>
+    </div>
+</div>
+
+<div id="level-complete-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-star stars-left">⭐</div>
+        <div class="modal-star stars-center">⭐</div>
+        <div class="modal-star stars-right">⭐</div>
+        <div class="modal-icon">🎉</div>
+        <div class="modal-title">恭喜过关!</div>
+        <div class="modal-subtitle">第 <span id="completed-level">1</span> 关</div>
+        <div class="modal-stats">
+            <div class="modal-stat">
+                <span class="stat-value" id="modal-score">0</span>
+                <span class="stat-label">得分</span>
+            </div>
+        </div>
+        <button id="next-level-btn" class="modal-btn">下一关</button>
+    </div>
+</div>
+
 <div id="game-container">
         <h1>Block Buster Game</h1>
         <div id="stats-bar">
@@ -18,8 +53,11 @@
             <div id="grid"></div>
             <canvas id="particle-canvas"></canvas>
         </div>
-        <button id="restart-button">Restart Game</button>
-        <div id="version-display">v2026020412</div>
+        <div class="button-group">
+            <button id="help-button" class="help-btn" title="查看教程">❓</button>
+            <button id="restart-button">Restart Game</button>
+        </div>
+        <div id="version-display">v2026020503</div>
 </div>
 <div id="sound-controls">
     <div class="sound-control-group">

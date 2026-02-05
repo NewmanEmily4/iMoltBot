@@ -1,5 +1,193 @@
 /* script.js */
 
+// 新手引导系统
+const GUIDE_KEY = 'blockBuster_guideCompleted';
+let currentGuideStep = 0;
+
+const guideSteps = [
+    {
+        icon: '🎮',
+        title: '欢迎来到 Block Buster!',
+        text: '点击任意2个或更多相连的同色方块即可消除！',
+        hint: '点击任意位置继续',
+        target: 'grid'
+    },
+    {
+        icon: '✨',
+        title: '消除规则',
+        text: '消除的方块越多，得分越高！\n3个方块 = 9分, 4个方块 = 16分',
+        hint: '明白了，继续',
+        target: 'stats-bar'
+    },
+    {
+        icon: '🎯',
+        title: '通关目标',
+        text: '每关都有目标分数，达到目标即可进入下一关！',
+        hint: '开始游戏！',
+        target: 'restart-button'
+    }
+];
+
+function isGuideCompleted() {
+    return localStorage.getItem(GUIDE_KEY) === 'true';
+}
+
+function completeGuide() {
+    localStorage.setItem(GUIDE_KEY, 'true');
+}
+
+function showGuideStep(step) {
+    const overlay = document.getElementById('guide-overlay');
+    const content = document.getElementById('guide-content');
+    const icon = document.getElementById('guide-icon');
+    const title = document.getElementById('guide-title');
+    const text = document.getElementById('guide-text');
+    const hint = document.getElementById('guide-hint');
+    const dots = document.querySelectorAll('.guide-dot');
+    
+    if (step >= guideSteps.length) {
+        hideGuide();
+        completeGuide();
+        return;
+    }
+    
+    const guideData = guideSteps[step];
+    icon.textContent = guideData.icon;
+    title.textContent = guideData.title;
+    text.textContent = guideData.text;
+    hint.textContent = guideData.hint;
+    
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === step);
+    });
+    
+    overlay.classList.remove('hidden');
+    
+    document.querySelectorAll('.guide-highlight').forEach(el => {
+        el.classList.remove('guide-highlight');
+    });
+    
+    if (guideData.target) {
+        const targetEl = document.getElementById(guideData.target);
+        if (targetEl) {
+            targetEl.classList.add('guide-highlight');
+        }
+    }
+}
+
+function hideGuide() {
+    const overlay = document.getElementById('guide-overlay');
+    overlay.classList.add('hidden');
+    document.querySelectorAll('.guide-highlight').forEach(el => {
+        el.classList.remove('guide-highlight');
+    });
+}
+
+function initGuide() {
+    if (isGuideCompleted()) {
+        return;
+    }
+    
+    currentGuideStep = 0;
+    
+    const overlay = document.getElementById('guide-overlay');
+    const content = document.getElementById('guide-content');
+    
+    const handleNext = () => {
+        currentGuideStep++;
+        if (currentGuideStep >= guideSteps.length) {
+            hideGuide();
+            completeGuide();
+        } else {
+            showGuideStep(currentGuideStep);
+        }
+    };
+    
+    content.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleNext();
+    });
+    
+    overlay.addEventListener('click', handleNext);
+    
+    showGuideStep(0);
+}
+
+function showGuideOnly() {
+    currentGuideStep = 0;
+    showGuideStep(0);
+    
+    const overlay = document.getElementById('guide-overlay');
+    const content = document.getElementById('guide-content');
+    
+    const handleNext = () => {
+        currentGuideStep++;
+        if (currentGuideStep >= guideSteps.length) {
+            hideGuide();
+        } else {
+            showGuideStep(currentGuideStep);
+        }
+    };
+    
+    content.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleNext();
+    });
+    
+    overlay.addEventListener('click', handleNext);
+}
+
+document.getElementById('help-button').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showGuideOnly();
+});
+
+document.getElementById('help-button').addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    showGuideOnly();
+}, { passive: false });
+
+// 关卡完成弹窗
+function showLevelComplete() {
+    const modal = document.getElementById('level-complete-modal');
+    const completedLevel = document.getElementById('completed-level');
+    const modalScore = document.getElementById('modal-score');
+    const stars = document.querySelectorAll('.modal-star');
+    
+    completedLevel.textContent = level;
+    modalScore.textContent = score;
+    
+    stars.forEach(star => {
+        star.style.opacity = '0';
+        star.style.animation = 'none';
+    });
+    
+    setTimeout(() => {
+        stars.forEach(star => {
+            star.style.animation = '';
+        });
+    }, 10);
+    
+    modal.classList.remove('hidden');
+    
+    const nextLevelHandler = () => {
+        modal.classList.add('hidden');
+        level++;
+        targetScore += 500 + (level * 200);
+        levelElement.textContent = level;
+        targetElement.textContent = targetScore;
+        createGrid();
+        if (!bgmMuted) {
+            bgmFiles.bgm.play().catch(() => {});
+        }
+    };
+    
+    document.getElementById('next-level-btn').onclick = nextLevelHandler;
+    
+    modal.querySelector('.modal-backdrop').onclick = nextLevelHandler;
+}
+
 const GRID_SIZE = 10;
 let BLOCK_SIZE = 40;
 const GAP = 3;
@@ -171,6 +359,7 @@ function initGame() {
             canvas.height = gridElement.offsetHeight;
             animateParticles();
             createGrid();
+            initGuide();
         });
     });
     
@@ -324,15 +513,7 @@ function checkLevelUp() {
             sfxFiles.levelUp.play();
             
             setTimeout(() => {
-                alert(`恭喜！完成第 ${level} 关！`);
-                level++;
-                targetScore += 500 + (level * 200);
-                levelElement.textContent = level;
-                targetElement.textContent = targetScore;
-                createGrid();
-                if (!bgmMuted) {
-                    bgmFiles.bgm.play().catch(() => {});
-                }
+                showLevelComplete();
             }, 300);
         }, 500);
     }
