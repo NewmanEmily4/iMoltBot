@@ -37,9 +37,82 @@
                 <span class="stat-value" id="modal-score">0</span>
                 <span class="stat-label">得分</span>
             </div>
+            <div class="modal-stat">
+                <span class="stat-value" id="modal-moves">0</span>
+                <span class="stat-label">步数</span>
+            </div>
+        </div>
+        <div class="modal-records">
+            <span id="modal-best-score">🏆 最佳: 0</span>
+            <span id="modal-best-moves">👣 最佳: -</span>
+        </div>
+        <div class="modal-records">
+            <span id="modal-highest">⭐ 历史最高: 0</span>
+            <span id="modal-completed">🎯 通关: 0</span>
         </div>
         <button id="next-level-btn" class="modal-btn">下一关</button>
     </div>
+</div>
+
+<div id="settings-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-icon">⚙️</div>
+        <div class="modal-title">设置</div>
+        <div class="modal-stats" style="flex-direction: column; gap: 20px;">
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05)); padding: 10px; border-radius: 8px;">
+                <span class="stat-label" id="settings-highest">⭐ 历史最高分: 0</span>
+            </div>
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between; background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(46,204,113,0.05)); padding: 10px; border-radius: 8px;">
+                <span class="stat-label" id="settings-completed">🎯 总通关次数: 0</span>
+            </div>
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                <span class="stat-label">BGM音量</span>
+                <span id="settings-bgm-value">40%</span>
+            </div>
+            <input type="range" id="settings-bgm-volume" min="0" max="100" value="40" style="width: 100%;">
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                <span class="stat-label">音效音量</span>
+                <span id="settings-sfx-value">80%</span>
+            </div>
+            <input type="range" id="settings-sfx-volume" min="0" max="100" value="80" style="width: 100%;">
+        </div>
+        <button id="reset-data-btn" class="modal-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); margin-top: 20px;">重置数据</button>
+        <button id="close-settings-btn" class="modal-btn" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d); margin-top: 10px;">关闭</button>
+    </div>
+</div>
+
+<div id="stats-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-icon">📊</div>
+        <div class="modal-title">我的成绩</div>
+        <div class="modal-stats" style="flex-direction: column; gap: 15px;">
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));">
+                <span class="stat-label">🏆 历史最高分</span>
+                <span class="stat-value" id="stats-highest-score">0</span>
+            </div>
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between;">
+                <span class="stat-label">🎯 总通关次数</span>
+                <span class="stat-value" id="stats-levels-completed">0</span>
+            </div>
+            <div class="modal-stat" style="flex-direction: row; justify-content: space-between;">
+                <span class="stat-label">⭐ 最高到达关卡</span>
+                <span class="stat-value" id="stats-max-level">1</span>
+            </div>
+        </div>
+        <div class="modal-subtitle" style="margin-top: 15px;">各关卡最佳步数</div>
+        <div id="level-best-moves-list" class="level-best-list">
+            <div class="level-best-item">暂无记录</div>
+        </div>
+        <button id="close-stats-btn" class="modal-btn" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d); margin-top: 20px;">关闭</button>
+    </div>
+</div>
+
+<div id="record-toast" class="record-toast hidden">
+    <div class="record-toast-icon">🎉</div>
+    <div class="record-toast-title" id="record-toast-title">新纪录!</div>
+    <div class="record-toast-text" id="record-toast-text"></div>
 </div>
 
 <div id="game-container">
@@ -48,6 +121,8 @@
             <div id="level-display">Level: <span id="level-value">1</span></div>
             <div id="score">Score: <span id="score-value">0</span></div>
             <div id="target">Target: <span id="target-value">500</span></div>
+            <div id="moves-display">👣 <span id="moves-value">0</span></div>
+            <div id="best-score-display"></div>
         </div>
         <div id="grid-wrapper">
             <div id="grid"></div>
@@ -55,9 +130,11 @@
         </div>
         <div class="button-group">
             <button id="help-button" class="help-btn" title="查看教程">❓</button>
+            <button id="stats-button" class="help-btn" title="我的成绩">📊</button>
             <button id="restart-button">Restart Game</button>
+            <button id="settings-button" class="help-btn" title="设置">⚙️</button>
         </div>
-        <div id="version-display">v2026020503</div>
+        <div id="version-display">v2026020510</div>
 </div>
 <div id="sound-controls">
     <div class="sound-control-group">

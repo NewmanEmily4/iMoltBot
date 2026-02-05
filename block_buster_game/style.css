@@ -889,12 +889,128 @@ body {
         font-size: 1em;
     }
 }
-    
-    .guide-title {
-        font-size: 1.1em;
+
+.modal-records {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.9em;
+    color: #8892b0;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+}
+
+.modal-records span {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+#best-score-display {
+    font-size: 0.9em;
+    animation: bestScoreGlow 2s ease-in-out infinite;
+}
+
+@keyframes bestScoreGlow {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
-    
-    .guide-text {
-        font-size: 0.9em;
+    50% {
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
     }
+}
+
+/* 统计页面样式 */
+.level-best-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.level-best-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    color: #8892b0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.level-best-item:last-child {
+    border-bottom: none;
+}
+
+.level-best-item .level-num {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.level-best-item .level-moves {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+/* 新纪录提示弹窗 */
+.record-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    padding: 30px 40px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 3000;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(255, 215, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: recordPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.record-toast.hidden {
+    display: none;
+}
+
+.record-toast-icon {
+    font-size: 4em;
+    margin-bottom: 10px;
+    animation: recordBounce 0.6s ease-in-out infinite;
+}
+
+@keyframes recordBounce {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+@keyframes recordPopIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.record-toast-title {
+    font-size: 1.8em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.record-toast-text {
+    font-size: 1.1em;
+    color: #8892b0;
+    font-weight: 500;
 }

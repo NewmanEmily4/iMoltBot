@@ -1,5 +1,209 @@
 /* script.js */
 
+// 游戏数据存储系统
+const SAVE_KEY = 'blockBuster_saveData';
+const SAVE_VERSION = 3;
+
+let grid = [];
+let score = 0;
+let level = 1;
+let targetScore = 500;
+let isAnimating = false;
+let moves = 0;
+
+let bgmMuted = false;
+let sfxMuted = false;
+let bgmVolume = 40;
+let sfxVolume = 80;
+
+let levelBestScores = {};
+let levelBestMoves = {};
+let highestScore = 0;
+let levelsCompleted = 0;
+let currentLevelBest = 0;
+let currentLevelBestMoves = 0;
+let hasShownHighestRecordToast = false;
+
+function saveGameData() {
+    const data = {
+        version: SAVE_VERSION,
+        timestamp: Date.now(),
+        score: score,
+        level: level,
+        targetScore: targetScore,
+        bgmMuted: bgmMuted,
+        bgmVolume: bgmVolume,
+        sfxMuted: sfxMuted,
+        sfxVolume: sfxVolume,
+        levelBestScores: levelBestScores,
+        levelBestMoves: levelBestMoves,
+        highestScore: highestScore,
+        levelsCompleted: levelsCompleted
+    };
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Failed to save game data:', e);
+    }
+}
+
+function loadGameData() {
+    try {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (!saved) return null;
+        
+        const data = JSON.parse(saved);
+        
+        if (data.version !== SAVE_VERSION) {
+            console.log('Save data version mismatch, resetting data');
+            return null;
+        }
+        
+        return data;
+    } catch (e) {
+        console.warn('Failed to load game data:', e);
+        return null;
+    }
+}
+
+function applyGameData(data) {
+    score = data.score || 0;
+    level = data.level || 1;
+    targetScore = data.targetScore || 500;
+    bgmMuted = data.bgmMuted || false;
+    bgmVolume = data.bgmVolume || 40;
+    sfxMuted = data.sfxMuted || false;
+    sfxVolume = data.sfxVolume || 80;
+    levelBestScores = data.levelBestScores || {};
+    levelBestMoves = data.levelBestMoves || {};
+    highestScore = data.highestScore || 0;
+    levelsCompleted = data.levelsCompleted || 0;
+    
+    moves = 0; hasShownHighestRecordToast = false;
+    currentLevelBest = levelBestScores[level] || 0;
+    currentLevelBestMoves = levelBestMoves[level] || 0;
+    
+    scoreElement.textContent = score;
+    levelElement.textContent = level;
+    targetElement.textContent = targetScore;
+    
+    updateBestScoreDisplay();
+    
+    const bgmSlider = document.getElementById('bgm-volume');
+    const sfxSlider = document.getElementById('sfx-volume');
+    const bgmIcon = document.getElementById('bgm-icon');
+    const sfxIcon = document.getElementById('sfx-icon');
+    
+    if (bgmSlider) {
+        bgmSlider.value = bgmVolume;
+        bgmFiles.bgm.volume = bgmVolume / 100;
+        bgmIcon.textContent = bgmMuted || bgmVolume === 0 ? '🔇' : (bgmVolume < 50 ? '🎵' : '🎶');
+    }
+    
+    if (sfxSlider) {
+        sfxSlider.value = sfxVolume;
+        Object.values(sfxFiles).forEach(sfx => sfx.volume = sfxVolume / 100);
+        sfxIcon.textContent = sfxMuted || sfxVolume === 0 ? '🔇' : '🔊';
+    }
+}
+
+function clearGameData() {
+    localStorage.removeItem(SAVE_KEY);
+    levelBestScores = {};
+    levelBestMoves = {};
+    highestScore = 0;
+    levelsCompleted = 0;
+    currentLevelBest = 0;
+    currentLevelBestMoves = 0;
+    updateBestScoreDisplay();
+}
+
+function updateBestScoreDisplay() {
+    const bestDisplay = document.getElementById('best-score-display');
+    if (bestDisplay) {
+        let text = '';
+        if (currentLevelBest > 0) {
+            text += `🏆 ${currentLevelBest}`;
+        }
+        if (text) {
+            bestDisplay.textContent = text;
+            bestDisplay.style.display = 'inline';
+        } else {
+            bestDisplay.style.display = 'none';
+        }
+    }
+    
+    const highestDisplay = document.getElementById('highest-score-display');
+    if (highestDisplay) {
+        highestDisplay.textContent = `⭐ ${highestScore}`;
+    }
+    
+    const completedDisplay = document.getElementById('completed-display');
+    if (completedDisplay) {
+        completedDisplay.textContent = `🎯 ${levelsCompleted}`;
+    }
+}
+
+function checkAndUpdateScore() {
+    if (score > highestScore) {
+        highestScore = score;
+        if (!hasShownHighestRecordToast) {
+            showNewRecordToast('🏆 新纪录!', `历史最高分: ${score}`);
+            hasShownHighestRecordToast = true;
+        }
+    }
+    
+    updateBestScoreDisplay();
+    saveGameData();
+}
+
+function onLevelComplete() {
+    if (score > 0) {
+        levelsCompleted++;
+        
+        let newRecord = false;
+        
+        if (score > currentLevelBest) {
+            currentLevelBest = score;
+            levelBestScores[level] = score;
+            newRecord = true;
+        }
+        
+        if (currentLevelBestMoves === 0 || moves < currentLevelBestMoves) {
+            currentLevelBestMoves = moves;
+            levelBestMoves[level] = moves;
+            newRecord = true;
+        }
+        
+        if (newRecord) {
+            setTimeout(() => {
+                showNewRecordToast('🎊 新纪录!', 
+                    (currentLevelBest > 0 ? `得分: ${currentLevelBest}` : '') + 
+                    (currentLevelBestMoves > 0 ? (currentLevelBest > 0 ? ' | ' : '') + `步数: ${currentLevelBestMoves}` : '')
+                );
+            }, 300);
+        }
+        
+        checkAndUpdateScore();
+    }
+}
+
+function resetMoves() {
+    moves = 0;
+    const movesValue = document.getElementById('moves-value');
+    if (movesValue) {
+        movesValue.textContent = '0';
+    }
+}
+
+function incrementMoves() {
+    moves++;
+    const movesValue = document.getElementById('moves-value');
+    if (movesValue) {
+        movesValue.textContent = moves;
+    }
+}
+
 // 新手引导系统
 const GUIDE_KEY = 'blockBuster_guideCompleted';
 let currentGuideStep = 0;
@@ -153,10 +357,24 @@ function showLevelComplete() {
     const modal = document.getElementById('level-complete-modal');
     const completedLevel = document.getElementById('completed-level');
     const modalScore = document.getElementById('modal-score');
+    const modalMoves = document.getElementById('modal-moves');
+    const modalBestScore = document.getElementById('modal-best-score');
+    const modalBestMoves = document.getElementById('modal-best-moves');
+    const modalHighest = document.getElementById('modal-highest');
+    const modalCompleted = document.getElementById('modal-completed');
     const stars = document.querySelectorAll('.modal-star');
     
     completedLevel.textContent = level;
     modalScore.textContent = score;
+    modalMoves.textContent = moves;
+    
+    const bestScore = levelBestScores[level] || 0;
+    const bestMoves = levelBestMoves[level] || 0;
+    modalBestScore.textContent = '🏆 最佳: ' + bestScore;
+    modalBestMoves.textContent = '👣 最佳: ' + (bestMoves > 0 ? bestMoves + '步' : '-');
+    
+    modalHighest.textContent = '⭐ 历史最高: ' + highestScore;
+    modalCompleted.textContent = '🎯 通关: ' + levelsCompleted;
     
     stars.forEach(star => {
         star.style.opacity = '0';
@@ -177,7 +395,13 @@ function showLevelComplete() {
         targetScore += 500 + (level * 200);
         levelElement.textContent = level;
         targetElement.textContent = targetScore;
+        moves = 0; hasShownHighestRecordToast = false;
+        document.getElementById('moves-value').textContent = '0';
+        currentLevelBest = levelBestScores[level] || 0;
+        currentLevelBestMoves = levelBestMoves[level] || 0;
+        updateBestScoreDisplay();
         createGrid();
+        checkAndUpdateScore();
         if (!bgmMuted) {
             bgmFiles.bgm.play().catch(() => {});
         }
@@ -199,12 +423,6 @@ const COLORS = {
     purple: '#9b59b6'
 };
 const COLOR_KEYS = Object.keys(COLORS);
-
-let grid = [];
-let score = 0;
-let level = 1;
-let targetScore = 500;
-let isAnimating = false;
 
 const gridElement = document.getElementById('grid');
 const scoreElement = document.getElementById('score-value');
@@ -252,8 +470,6 @@ sfxFiles.click.volume = 0.5;
 sfxFiles.pop.volume = 0.5;
 sfxFiles.levelUp.volume = 0.7;
 
-let bgmMuted = false;
-let sfxMuted = false;
 let audioInitialized = false;
 
 const bgmVolumeSlider = document.getElementById('bgm-volume');
@@ -264,13 +480,17 @@ const sfxIcon = document.getElementById('sfx-icon');
 function updateBgmVolume() {
     const value = bgmVolumeSlider.value / 100;
     bgmFiles.bgm.volume = value;
+    bgmVolume = bgmVolumeSlider.value;
     bgmIcon.textContent = bgmMuted || value === 0 ? '🔇' : (value < 0.5 ? '🎵' : '🎶');
+    saveGameData();
 }
 
 function updateSfxVolume() {
     const value = sfxVolumeSlider.value / 100;
     Object.values(sfxFiles).forEach(sfx => sfx.volume = value);
+    sfxVolume = sfxVolumeSlider.value;
     sfxIcon.textContent = sfxMuted || value === 0 ? '🔇' : '🔊';
+    saveGameData();
 }
 
 function toggleBgm() {
@@ -278,12 +498,14 @@ function toggleBgm() {
     bgmMuted = !bgmMuted;
     bgmFiles.bgm.muted = bgmMuted;
     bgmIcon.textContent = bgmMuted ? '🔇' : '🎵';
+    saveGameData();
 }
 
 function toggleSfx() {
     sfxMuted = !sfxMuted;
     Object.values(sfxFiles).forEach(sfx => sfx.muted = sfxMuted);
     sfxIcon.textContent = sfxMuted ? '🔇' : '🔊';
+    saveGameData();
 }
 
 function initAudio() {
@@ -352,6 +574,8 @@ function animateParticles() {
 
 // --- 核心逻辑 ---
 function initGame() {
+    applyGameData(loadGameData());
+    
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             calculateBlockSize();
@@ -429,6 +653,7 @@ function handleBlockClick(col, row) {
         sfxFiles.pop.play();
         
         isAnimating = true;
+        incrementMoves();
         const gain = matches.length * matches.length;
         updateScore(matches.length);
         
@@ -465,6 +690,7 @@ function handleBlockClick(col, row) {
 function updateScore(count) {
     score += count * count;
     scoreElement.textContent = score;
+    checkAndUpdateScore();
 }
 
 function getConnectedBlocks(col, row, color, visited = new Set()) {
@@ -512,6 +738,8 @@ function checkLevelUp() {
             sfxFiles.levelUp.currentTime = 0;
             sfxFiles.levelUp.play();
             
+            onLevelComplete();
+            
             setTimeout(() => {
                 showLevelComplete();
             }, 300);
@@ -535,22 +763,32 @@ function shakeGrid() {
 }
 
 document.getElementById('restart-button').addEventListener('click', () => {
-    score = 0; level = 1; targetScore = 500;
+    score = 0; level = 1; targetScore = 500; moves = 0; hasShownHighestRecordToast = false;
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
     targetElement.textContent = '500';
+    document.getElementById('moves-value').textContent = '0';
+    currentLevelBest = levelBestScores[level] || 0;
+    currentLevelBestMoves = levelBestMoves[level] || 0;
+    updateBestScoreDisplay();
     calculateBlockSize();
     createGrid();
+    checkAndUpdateScore();
 });
 
 document.getElementById('restart-button').addEventListener('touchstart', (e) => {
     e.preventDefault();
-    score = 0; level = 1; targetScore = 500;
+    score = 0; level = 1; targetScore = 500; moves = 0; hasShownHighestRecordToast = false;
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
     targetElement.textContent = '500';
+    document.getElementById('moves-value').textContent = '0';
+    currentLevelBest = levelBestScores[level] || 0;
+    currentLevelBestMoves = levelBestMoves[level] || 0;
+    updateBestScoreDisplay();
     calculateBlockSize();
     createGrid();
+    checkAndUpdateScore();
 });
 
 window.addEventListener('resize', () => {
@@ -590,5 +828,158 @@ document.addEventListener('pagehide', () => {
 window.addEventListener('beforeunload', () => {
     pauseAllAudio();
 });
+
+// 设置模态框
+function showSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    const bgmSlider = document.getElementById('settings-bgm-volume');
+    const sfxSlider = document.getElementById('settings-sfx-volume');
+    const bgmValue = document.getElementById('settings-bgm-value');
+    const sfxValue = document.getElementById('settings-sfx-value');
+    const settingsHighest = document.getElementById('settings-highest');
+    const settingsCompleted = document.getElementById('settings-completed');
+    
+    bgmSlider.value = bgmVolume;
+    sfxSlider.value = sfxVolume;
+    bgmValue.textContent = bgmVolume + '%';
+    sfxValue.textContent = sfxVolume + '%';
+    settingsHighest.textContent = '⭐ 历史最高分: ' + highestScore;
+    settingsCompleted.textContent = '🎯 总通关次数: ' + levelsCompleted;
+    
+    modal.classList.remove('hidden');
+}
+
+function hideSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    modal.classList.add('hidden');
+}
+
+document.getElementById('settings-button').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showSettingsModal();
+});
+
+document.getElementById('settings-button').addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    showSettingsModal();
+}, { passive: false });
+
+document.getElementById('close-settings-btn').addEventListener('click', hideSettingsModal);
+document.querySelector('#settings-modal .modal-backdrop').addEventListener('click', hideSettingsModal);
+
+document.getElementById('settings-bgm-volume').addEventListener('input', (e) => {
+    bgmVolume = e.target.value;
+    bgmFiles.bgm.volume = bgmVolume / 100;
+    document.getElementById('settings-bgm-value').textContent = bgmVolume + '%';
+    document.getElementById('bgm-volume').value = bgmVolume;
+    saveGameData();
+});
+
+document.getElementById('settings-sfx-volume').addEventListener('input', (e) => {
+    sfxVolume = e.target.value;
+    Object.values(sfxFiles).forEach(sfx => sfx.volume = sfxVolume / 100);
+    document.getElementById('settings-sfx-value').textContent = sfxVolume + '%';
+    document.getElementById('sfx-volume').value = sfxVolume;
+    saveGameData();
+});
+
+document.getElementById('reset-data-btn').addEventListener('click', () => {
+    if (confirm('确定要重置所有数据吗？此操作不可恢复！')) {
+        clearGameData();
+        score = 0;
+        level = 1;
+        targetScore = 500;
+        bgmVolume = 40;
+        sfxVolume = 80;
+        bgmMuted = false;
+        sfxMuted = false;
+        
+        scoreElement.textContent = '0';
+        levelElement.textContent = '1';
+        targetElement.textContent = '500';
+        
+        document.getElementById('bgm-volume').value = 40;
+        document.getElementById('sfx-volume').value = 80;
+        bgmFiles.bgm.volume = 0.4;
+        Object.values(sfxFiles).forEach(sfx => sfx.volume = 0.8);
+        
+        document.getElementById('settings-bgm-volume').value = 40;
+        document.getElementById('settings-sfx-volume').value = 80;
+        document.getElementById('settings-bgm-value').textContent = '40%';
+        document.getElementById('settings-sfx-value').textContent = '80%';
+        
+        createGrid();
+        hideSettingsModal();
+        alert('数据已重置！');
+    }
+});
+
+// 统计页面
+function showStatsModal() {
+    const modal = document.getElementById('stats-modal');
+    const statsHighestScore = document.getElementById('stats-highest-score');
+    const statsLevelsCompleted = document.getElementById('stats-levels-completed');
+    const statsMaxLevel = document.getElementById('stats-max-level');
+    const levelBestMovesList = document.getElementById('level-best-moves-list');
+    
+    statsHighestScore.textContent = highestScore;
+    statsLevelsCompleted.textContent = levelsCompleted;
+    statsMaxLevel.textContent = level;
+    
+    levelBestMovesList.innerHTML = '';
+    const levels = Object.keys(levelBestMoves).map(Number).sort((a, b) => a - b);
+    
+    if (levels.length === 0) {
+        levelBestMovesList.innerHTML = '<div class="level-best-item">暂无记录</div>';
+    } else {
+        let html = '';
+        levels.forEach(lvl => {
+            const moves = levelBestMoves[lvl];
+            html += `<div class="level-best-item"><span class="level-num">第${lvl}关</span><span class="level-moves">${moves}步</span></div>`;
+        });
+        levelBestMovesList.innerHTML = html;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function hideStatsModal() {
+    const modal = document.getElementById('stats-modal');
+    modal.classList.add('hidden');
+}
+
+document.getElementById('stats-button').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showStatsModal();
+});
+
+document.getElementById('stats-button').addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    showStatsModal();
+}, { passive: false });
+
+document.getElementById('close-stats-btn').addEventListener('click', hideStatsModal);
+document.querySelector('#stats-modal .modal-backdrop').addEventListener('click', hideStatsModal);
+
+// 新纪录提示
+function showNewRecordToast(title, text) {
+    const toast = document.getElementById('record-toast');
+    const toastTitle = document.getElementById('record-toast-title');
+    const toastText = document.getElementById('record-toast-text');
+    
+    toastTitle.textContent = title;
+    toastText.textContent = text;
+    toast.classList.remove('hidden');
+    
+    if (window.recordToastTimeout) {
+        clearTimeout(window.recordToastTimeout);
+    }
+    
+    window.recordToastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 2000);
+}
 
 initGame();
