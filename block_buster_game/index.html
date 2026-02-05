@@ -82,6 +82,27 @@
     </div>
 </div>
 
+<div id="reset-confirm-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-title">确认重置</div>
+        <div class="modal-subtitle" style="color: #e74c3c;">确定要重置所有数据吗？<br>此操作不可恢复！</div>
+        <button id="confirm-reset-btn" class="modal-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); margin-top: 20px;">确认重置</button>
+        <button id="cancel-reset-btn" class="modal-btn" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d); margin-top: 10px;">取消</button>
+    </div>
+</div>
+
+<div id="reset-complete-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-icon">✅</div>
+        <div class="modal-title">重置完成</div>
+        <div class="modal-subtitle">所有数据已清除<br>即将开始新游戏...</div>
+        <button id="close-reset-complete-btn" class="modal-btn" style="background: linear-gradient(135deg, #2ecc71, #27ae60); margin-top: 20px;">开始游戏</button>
+    </div>
+</div>
+
 <div id="stats-modal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
@@ -134,7 +155,7 @@
             <button id="restart-button">Restart Game</button>
             <button id="settings-button" class="help-btn" title="设置">⚙️</button>
         </div>
-        <div id="version-display">v2026020510</div>
+        <div id="version-display">v2026020511</div>
 </div>
 <div id="sound-controls">
     <div class="sound-control-group">

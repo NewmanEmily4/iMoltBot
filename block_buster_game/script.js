@@ -79,7 +79,7 @@ function applyGameData(data) {
     highestScore = data.highestScore || 0;
     levelsCompleted = data.levelsCompleted || 0;
     
-    moves = 0; hasShownHighestRecordToast = false;
+    moves = 0;
     currentLevelBest = levelBestScores[level] || 0;
     currentLevelBestMoves = levelBestMoves[level] || 0;
     
@@ -115,6 +115,7 @@ function clearGameData() {
     levelsCompleted = 0;
     currentLevelBest = 0;
     currentLevelBestMoves = 0;
+    hasShownHighestRecordToast = true;
     updateBestScoreDisplay();
 }
 
@@ -147,7 +148,7 @@ function updateBestScoreDisplay() {
 function checkAndUpdateScore() {
     if (score > highestScore) {
         highestScore = score;
-        if (!hasShownHighestRecordToast) {
+        if (!hasShownHighestRecordToast || score >= highestScore + 50) {
             showNewRecordToast('🏆 新纪录!', `历史最高分: ${score}`);
             hasShownHighestRecordToast = true;
         }
@@ -395,7 +396,7 @@ function showLevelComplete() {
         targetScore += 500 + (level * 200);
         levelElement.textContent = level;
         targetElement.textContent = targetScore;
-        moves = 0; hasShownHighestRecordToast = false;
+        moves = 0;
         document.getElementById('moves-value').textContent = '0';
         currentLevelBest = levelBestScores[level] || 0;
         currentLevelBestMoves = levelBestMoves[level] || 0;
@@ -763,7 +764,7 @@ function shakeGrid() {
 }
 
 document.getElementById('restart-button').addEventListener('click', () => {
-    score = 0; level = 1; targetScore = 500; moves = 0; hasShownHighestRecordToast = false;
+    score = 0; level = 1; targetScore = 500; moves = 0;
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
     targetElement.textContent = '500';
@@ -778,7 +779,7 @@ document.getElementById('restart-button').addEventListener('click', () => {
 
 document.getElementById('restart-button').addEventListener('touchstart', (e) => {
     e.preventDefault();
-    score = 0; level = 1; targetScore = 500; moves = 0; hasShownHighestRecordToast = false;
+    score = 0; level = 1; targetScore = 500; moves = 0;
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
     targetElement.textContent = '500';
@@ -885,34 +886,47 @@ document.getElementById('settings-sfx-volume').addEventListener('input', (e) => 
 });
 
 document.getElementById('reset-data-btn').addEventListener('click', () => {
-    if (confirm('确定要重置所有数据吗？此操作不可恢复！')) {
-        clearGameData();
-        score = 0;
-        level = 1;
-        targetScore = 500;
-        bgmVolume = 40;
-        sfxVolume = 80;
-        bgmMuted = false;
-        sfxMuted = false;
-        
-        scoreElement.textContent = '0';
-        levelElement.textContent = '1';
-        targetElement.textContent = '500';
-        
-        document.getElementById('bgm-volume').value = 40;
-        document.getElementById('sfx-volume').value = 80;
-        bgmFiles.bgm.volume = 0.4;
-        Object.values(sfxFiles).forEach(sfx => sfx.volume = 0.8);
-        
-        document.getElementById('settings-bgm-volume').value = 40;
-        document.getElementById('settings-sfx-volume').value = 80;
-        document.getElementById('settings-bgm-value').textContent = '40%';
-        document.getElementById('settings-sfx-value').textContent = '80%';
-        
-        createGrid();
-        hideSettingsModal();
-        alert('数据已重置！');
-    }
+    hideSettingsModal();
+    document.getElementById('reset-confirm-modal').classList.remove('hidden');
+});
+
+document.getElementById('cancel-reset-btn').addEventListener('click', () => {
+    document.getElementById('reset-confirm-modal').classList.add('hidden');
+});
+
+document.getElementById('confirm-reset-btn').addEventListener('click', () => {
+    clearGameData();
+    score = 0;
+    level = 1;
+    targetScore = 500;
+    bgmVolume = 40;
+    sfxVolume = 80;
+    bgmMuted = false;
+    sfxMuted = false;
+    hasShownHighestRecordToast = true;
+    
+    scoreElement.textContent = '0';
+    levelElement.textContent = '1';
+    targetElement.textContent = '500';
+    
+    document.getElementById('bgm-volume').value = 40;
+    document.getElementById('sfx-volume').value = 80;
+    bgmFiles.bgm.volume = 0.4;
+    Object.values(sfxFiles).forEach(sfx => sfx.volume = 0.8);
+    
+    document.getElementById('settings-bgm-volume').value = 40;
+    document.getElementById('settings-sfx-volume').value = 80;
+    document.getElementById('settings-bgm-value').textContent = '40%';
+    document.getElementById('settings-sfx-value').textContent = '40%';
+    
+    document.getElementById('reset-confirm-modal').classList.add('hidden');
+    document.getElementById('reset-complete-modal').classList.remove('hidden');
+    
+    createGrid();
+});
+
+document.getElementById('close-reset-complete-btn').addEventListener('click', () => {
+    document.getElementById('reset-complete-modal').classList.add('hidden');
 });
 
 // 统计页面
