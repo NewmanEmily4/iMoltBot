@@ -23,6 +23,7 @@ let levelsCompleted = 0;
 let currentLevelBest = 0;
 let currentLevelBestMoves = 0;
 let hasShownHighestRecordToast = false;
+let hasShownNewRecordForCurrentLevel = false;
 
 function saveGameData() {
     const data = {
@@ -82,6 +83,7 @@ function applyGameData(data) {
     moves = 0;
     currentLevelBest = levelBestScores[level] || 0;
     currentLevelBestMoves = levelBestMoves[level] || 0;
+    hasShownNewRecordForCurrentLevel = false;
     
     scoreElement.textContent = score;
     levelElement.textContent = level;
@@ -116,6 +118,7 @@ function clearGameData() {
     currentLevelBest = 0;
     currentLevelBestMoves = 0;
     hasShownHighestRecordToast = true;
+    hasShownNewRecordForCurrentLevel = false;
     updateBestScoreDisplay();
 }
 
@@ -146,12 +149,17 @@ function updateBestScoreDisplay() {
 }
 
 function checkAndUpdateScore() {
-    if (score > highestScore) {
+    if (score > highestScore && highestScore > 0) {
         highestScore = score;
         if (!hasShownHighestRecordToast || score >= highestScore + 50) {
             showNewRecordToast('🏆 新纪录!', `历史最高分: ${score}`);
             hasShownHighestRecordToast = true;
         }
+    }
+    
+    if (score > currentLevelBest && currentLevelBest > 0 && !hasShownNewRecordForCurrentLevel) {
+        hasShownNewRecordForCurrentLevel = true;
+        showNewRecordToast('🎉 关卡新纪录!', `当前关卡: ${score}`);
     }
     
     updateBestScoreDisplay();
@@ -400,6 +408,7 @@ function showLevelComplete() {
         document.getElementById('moves-value').textContent = '0';
         currentLevelBest = levelBestScores[level] || 0;
         currentLevelBestMoves = levelBestMoves[level] || 0;
+        hasShownNewRecordForCurrentLevel = false;
         updateBestScoreDisplay();
         createGrid();
         checkAndUpdateScore();
@@ -771,6 +780,7 @@ document.getElementById('restart-button').addEventListener('click', () => {
     document.getElementById('moves-value').textContent = '0';
     currentLevelBest = levelBestScores[level] || 0;
     currentLevelBestMoves = levelBestMoves[level] || 0;
+    hasShownNewRecordForCurrentLevel = false;
     updateBestScoreDisplay();
     calculateBlockSize();
     createGrid();
@@ -786,6 +796,7 @@ document.getElementById('restart-button').addEventListener('touchstart', (e) => 
     document.getElementById('moves-value').textContent = '0';
     currentLevelBest = levelBestScores[level] || 0;
     currentLevelBestMoves = levelBestMoves[level] || 0;
+    hasShownNewRecordForCurrentLevel = false;
     updateBestScoreDisplay();
     calculateBlockSize();
     createGrid();
@@ -904,6 +915,7 @@ document.getElementById('confirm-reset-btn').addEventListener('click', () => {
     bgmMuted = false;
     sfxMuted = false;
     hasShownHighestRecordToast = true;
+    hasShownNewRecordForCurrentLevel = false;
     
     scoreElement.textContent = '0';
     levelElement.textContent = '1';
